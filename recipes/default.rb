@@ -30,9 +30,16 @@ template "/etc/apt/sources.list.d/cloudera.list" do
   notifies :run, resources("execute[apt-get update]"), :immediately
 end
 
-execute "curl -s http://archive.cloudera.com/debian/archive.key | apt-key add -" do
-  not_if "apt-key export 'Cloudera Apt Repository'"
+# trust the cloudera repository
+package "curl"
+execute "curl -s http://archive.cloudera.com/debian/archive.key | apt-key add -"
+
+# package "hadoop" causes the following error ob ubuntu 10.04:
+# [Sun, 25 Sep 2011 02:38:48 -0700] FATAL: Chef::Exceptions::Package: package[hadoop] (hadoop::default line 34) 
+# had an error: apt does not have a version of package hadoop
+# installing it manually work, though
+if platform?("ubuntu")
+  execute "apt-get -y install hadoop"
+else
+  package "hadoop"
 end
-
-package "hadoop"
-
