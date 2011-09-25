@@ -32,7 +32,11 @@ end
 
 # trust the cloudera repository
 package "curl"
-execute "curl -s http://archive.cloudera.com/debian/archive.key | apt-key add -"
+execute "curl -s http://archive.cloudera.com/debian/archive.key | apt-key add -" do
+  # apt update so that the key is recognized and
+  # apt-get -y install ... works 
+  notifies :run, resources("execute[apt-get update]"), :immediately
+end  
 
 # package "hadoop" causes the following error ob ubuntu 10.04:
 # [Sun, 25 Sep 2011 02:38:48 -0700] FATAL: Chef::Exceptions::Package: package[hadoop] (hadoop::default line 34) 
